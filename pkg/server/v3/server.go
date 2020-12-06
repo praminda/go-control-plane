@@ -19,6 +19,7 @@ package server
 import (
 	"context"
 	"errors"
+
 	"github.com/envoyproxy/go-control-plane/pkg/server/rest/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/sotw/v3"
 	"google.golang.org/grpc/codes"
@@ -34,6 +35,7 @@ import (
 	secretservice "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
+	configservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/config"
 )
 
 // Server is a collection of handlers for streaming discovery requests.
@@ -45,6 +47,7 @@ type Server interface {
 	discoverygrpc.AggregatedDiscoveryServiceServer
 	secretservice.SecretDiscoveryServiceServer
 	runtimeservice.RuntimeDiscoveryServiceServer
+	configservice.ConfigDiscoveryServiceServer
 
 	rest.Server
 	sotw.Server
@@ -127,6 +130,7 @@ func NewServerAdvanced(restServer rest.Server, sotwServer sotw.Server) Server {
 }
 
 type server struct {
+	configservice.UnimplementedConfigDiscoveryServiceServer
 	rest rest.Server
 	sotw sotw.Server
 }
@@ -161,6 +165,10 @@ func (s *server) StreamSecrets(stream secretservice.SecretDiscoveryService_Strea
 
 func (s *server) StreamRuntime(stream runtimeservice.RuntimeDiscoveryService_StreamRuntimeServer) error {
 	return s.StreamHandler(stream, resource.RuntimeType)
+}
+
+func (s *server) StreamConfigs(stream configservice.ConfigDiscoveryService_StreamConfigsServer) error {
+	return s.StreamHandler(stream, resource.ConfigType)
 }
 
 // Fetch is the universal fetch method.
@@ -213,6 +221,14 @@ func (s *server) FetchRuntime(ctx context.Context, req *discovery.DiscoveryReque
 		return nil, status.Errorf(codes.Unavailable, "empty request")
 	}
 	req.TypeUrl = resource.RuntimeType
+	return s.Fetch(ctx, req)
+}
+
+func (s *server) FetchConfigs(ctx context.Context, req *discovery.DiscoveryRequest) (*discovery.DiscoveryResponse, error) {
+	if req == nil {
+		return nil, status.Errorf(codes.Unavailable, "empty request")
+	}
+	req.TypeUrl = resource.ConfigType
 	return s.Fetch(ctx, req)
 }
 

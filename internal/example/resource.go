@@ -28,6 +28,7 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	config "github.com/envoyproxy/go-control-plane/wso2/discovery/config/enforcer"
 )
 
 const (
@@ -47,6 +48,32 @@ func makeCluster(clusterName string) *cluster.Cluster {
 		LbPolicy:             cluster.Cluster_ROUND_ROBIN,
 		LoadAssignment:       makeEndpoint(clusterName),
 		DnsLookupFamily:      cluster.Cluster_V4_ONLY,
+	}
+}
+
+func makeConfigs() *config.Config {
+	return &config.Config{
+		Truststore: &config.CertStore{
+			Location: "/Volumes/Repos/wso2/apim/worktrees/envoy-gw/resources/enforcer/security/client-truststore.jks",
+			Password: "wso2carbon",
+			Type:     "jks",
+		},
+		JwtTokenConfig: []*config.Issuer{{
+			CertificateAlias:     "wso2apim310",
+			ConsumerKeyClaim:     "azp",
+			Issuer:               "https://localhost:9443/oauth2/token",
+			Name:                 "Resident Key Manager",
+			ValidateSubscription: false,
+			JwksURL:              "",
+		}},
+		Eventhub: &config.EventHub{
+			Enabled:             true,
+			ServiceUrl:          "https://localhost:9443",
+			InternalDataContext: "/internal/data/v1/",
+			ListenerEndpoint:    "amqp://admin:admin@carbon/carbon?brokerlist='tcp://localhost:5672'",
+			Username:            "admin",
+			Password:            "admin",
+		},
 	}
 }
 
@@ -171,7 +198,8 @@ func GenerateSnapshot() cache.Snapshot {
 		[]types.Resource{makeCluster(ClusterName)},
 		[]types.Resource{makeRoute(RouteName, ClusterName)},
 		[]types.Resource{makeHTTPListener(ListenerName, RouteName)},
-		[]types.Resource{}, // runtimes
-		[]types.Resource{}, // secrets
+		[]types.Resource{},              // runtimes
+		[]types.Resource{},              // secrets
+		[]types.Resource{makeConfigs()}, // configs
 	)
 }

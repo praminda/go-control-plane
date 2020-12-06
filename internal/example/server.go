@@ -29,6 +29,7 @@ import (
 	runtimeservice "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	secretservice "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
+	configservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/config"
 )
 
 const (
@@ -44,6 +45,7 @@ func registerServer(grpcServer *grpc.Server, server serverv3.Server) {
 	listenerservice.RegisterListenerDiscoveryServiceServer(grpcServer, server)
 	secretservice.RegisterSecretDiscoveryServiceServer(grpcServer, server)
 	runtimeservice.RegisterRuntimeDiscoveryServiceServer(grpcServer, server)
+	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, server)
 }
 
 // RunServer starts an xDS server at the given port.
