@@ -47,6 +47,8 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.Runtime
 	case resource.ConfigType:
 		return types.Config
+	case resource.APIType:
+		return types.API
 	}
 	return types.UnknownType
 }

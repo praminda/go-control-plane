@@ -35,6 +35,7 @@ import (
 	secretservice "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
+	apiservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/api"
 	configservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/config"
 )
 
@@ -48,6 +49,7 @@ type Server interface {
 	secretservice.SecretDiscoveryServiceServer
 	runtimeservice.RuntimeDiscoveryServiceServer
 	configservice.ConfigDiscoveryServiceServer
+	apiservice.ApiDiscoveryServiceServer
 
 	rest.Server
 	sotw.Server
@@ -131,6 +133,7 @@ func NewServerAdvanced(restServer rest.Server, sotwServer sotw.Server) Server {
 
 type server struct {
 	configservice.UnimplementedConfigDiscoveryServiceServer
+	apiservice.UnimplementedApiDiscoveryServiceServer
 	rest rest.Server
 	sotw sotw.Server
 }
@@ -169,6 +172,10 @@ func (s *server) StreamRuntime(stream runtimeservice.RuntimeDiscoveryService_Str
 
 func (s *server) StreamConfigs(stream configservice.ConfigDiscoveryService_StreamConfigsServer) error {
 	return s.StreamHandler(stream, resource.ConfigType)
+}
+
+func (s *server) StreamApis(stream apiservice.ApiDiscoveryService_StreamApisServer) error {
+	return s.StreamHandler(stream, resource.APIType)
 }
 
 // Fetch is the universal fetch method.
@@ -229,6 +236,14 @@ func (s *server) FetchConfigs(ctx context.Context, req *discovery.DiscoveryReque
 		return nil, status.Errorf(codes.Unavailable, "empty request")
 	}
 	req.TypeUrl = resource.ConfigType
+	return s.Fetch(ctx, req)
+}
+
+func (s *server) FetchApis(ctx context.Context, req *discovery.DiscoveryRequest) (*discovery.DiscoveryResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.Unauthenticated, "empty request")
+	}
+	req.TypeUrl = resource.APIType
 	return s.Fetch(ctx, req)
 }
 

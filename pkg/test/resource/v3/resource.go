@@ -395,6 +395,7 @@ func (ts TestSnapshot) Generate() cache.Snapshot {
 		runtimes,
 		secrets,
 		[]types.Resource{},
+		[]types.Resource{},
 	)
 
 	return out

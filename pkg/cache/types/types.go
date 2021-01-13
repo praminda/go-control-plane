@@ -32,5 +32,6 @@ const (
 	Secret
 	Runtime
 	Config
+	API
 	UnknownType // token to count the total number of supported types
 )
