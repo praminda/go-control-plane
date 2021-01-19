@@ -79,6 +79,8 @@ type watches struct {
 	listeners chan cache.Response
 	secrets   chan cache.Response
 	runtimes  chan cache.Response
+	configs   chan cache.Response
+	apis      chan cache.Response
 
 	endpointCancel func()
 	clusterCancel  func()
@@ -86,6 +88,8 @@ type watches struct {
 	listenerCancel func()
 	secretCancel   func()
 	runtimeCancel  func()
+	configCancel   func()
+	apiCancel      func()
 
 	endpointNonce string
 	clusterNonce  string
@@ -93,6 +97,8 @@ type watches struct {
 	listenerNonce string
 	secretNonce   string
 	runtimeNonce  string
+	confiNonce    string
+	apiNonce      string
 
 	// Opaque resources share a muxed channel. Nonces and watch cancellations are indexed by type URL.
 	responses     chan cache.Response
@@ -132,6 +138,12 @@ func (values *watches) Cancel() {
 	}
 	if values.runtimeCancel != nil {
 		values.runtimeCancel()
+	}
+	if values.configCancel != nil {
+		values.configCancel()
+	}
+	if values.apiCancel != nil {
+		values.apiCancel()
 	}
 	for _, cancel := range values.cancellations {
 		if cancel != nil {
@@ -256,6 +268,26 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 			}
 			values.runtimeNonce = nonce
 
+		case resp, more := <-values.configs:
+			if !more {
+				return status.Errorf(codes.Unavailable, "configs watch failed")
+			}
+			nonce, err := send(resp, resource.ConfigType)
+			if err != nil {
+				return err
+			}
+			values.confiNonce = nonce
+
+		case resp, more := <-values.apis:
+			if !more {
+				return status.Errorf(codes.Unavailable, "apis watch failed")
+			}
+			nonce, err := send(resp, resource.APIType)
+			if err != nil {
+				return err
+			}
+			values.apiNonce = nonce
+
 		case resp, more := <-values.responses:
 			if more {
 				if resp == errorResponse {
@@ -346,6 +378,20 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 						values.runtimeCancel()
 					}
 					values.runtimes, values.runtimeCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.ConfigType:
+				if values.confiNonce == "" || values.confiNonce == nonce {
+					if values.configCancel != nil {
+						values.configCancel()
+					}
+					values.configs, values.configCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.APIType:
+				if values.apiNonce == "" || values.apiNonce == nonce {
+					if values.apiCancel != nil {
+						values.apiCancel()
+					}
+					values.apis, values.apiCancel = s.cache.CreateWatch(req)
 				}
 			default:
 				typeUrl := req.TypeUrl

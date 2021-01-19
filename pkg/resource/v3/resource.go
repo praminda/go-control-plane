@@ -17,8 +17,8 @@ const (
 	ListenerType  = apiTypePrefix + "envoy.config.listener.v3.Listener"
 	SecretType    = apiTypePrefix + "envoy.extensions.transport_sockets.tls.v3.Secret"
 	RuntimeType   = apiTypePrefix + "envoy.service.runtime.v3.Runtime"
-	ConfigType    = apiTypePrefix + "discovery.config.enforcer.Config"
-	APIType       = apiTypePrefix + "discovery.api.Api"
+	ConfigType    = apiTypePrefix + "wso2.discovery.config.enforcer.Config"
+	APIType       = apiTypePrefix + "wso2.discovery.api.Api"
 
 	// AnyType is used only by ADS
 	AnyType = ""
