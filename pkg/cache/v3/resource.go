@@ -28,6 +28,7 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	"github.com/envoyproxy/go-control-plane/wso2/discovery/api"
 )
 
 // GetResponseType returns the enumeration for a valid xDS type URL
@@ -68,6 +69,8 @@ func GetResourceName(res types.Resource) string {
 		return v.GetName()
 	case *runtime.Runtime:
 		return v.GetName()
+	case *api.Api:
+		return v.GetBasePath() + v.GetVersion()
 	default:
 		return ""
 	}
