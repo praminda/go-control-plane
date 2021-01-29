@@ -19,9 +19,8 @@ package server
 import (
 	"context"
 	"errors"
-
-	"github.com/envoyproxy/go-control-plane/pkg/server/rest/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/server/sotw/v3"
+	rest "github.com/envoyproxy/go-control-plane/pkg/server/rest/v3"
+	sotw "github.com/envoyproxy/go-control-plane/pkg/server/sotw/v3"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -33,10 +32,11 @@ import (
 	routeservice "github.com/envoyproxy/go-control-plane/envoy/service/route/v3"
 	runtimeservice "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	secretservice "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
+	cache "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	apiservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/api"
 	configservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/config"
+	subscriptionservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/subscription"
 )
 
 // Server is a collection of handlers for streaming discovery requests.
@@ -50,6 +50,12 @@ type Server interface {
 	runtimeservice.RuntimeDiscoveryServiceServer
 	configservice.ConfigDiscoveryServiceServer
 	apiservice.ApiDiscoveryServiceServer
+	subscriptionservice.SubscriptionDiscoveryServiceServer
+	subscriptionservice.ApplicationDiscoveryServiceServer
+	subscriptionservice.ApiListDiscoveryServiceServer
+	subscriptionservice.ApplicationPolicyDiscoveryServiceServer
+	subscriptionservice.SubscriptionPolicyDiscoveryServiceServer
+	subscriptionservice.ApplicationKeyMappingDiscoveryServiceServer
 
 	rest.Server
 	sotw.Server
@@ -134,6 +140,12 @@ func NewServerAdvanced(restServer rest.Server, sotwServer sotw.Server) Server {
 type server struct {
 	configservice.UnimplementedConfigDiscoveryServiceServer
 	apiservice.UnimplementedApiDiscoveryServiceServer
+	subscriptionservice.UnimplementedSubscriptionDiscoveryServiceServer
+	subscriptionservice.UnimplementedApplicationDiscoveryServiceServer
+	subscriptionservice.UnimplementedApiListDiscoveryServiceServer
+	subscriptionservice.UnimplementedApplicationPolicyDiscoveryServiceServer
+	subscriptionservice.UnimplementedSubscriptionPolicyDiscoveryServiceServer
+	subscriptionservice.UnimplementedApplicationKeyMappingDiscoveryServiceServer
 	rest rest.Server
 	sotw sotw.Server
 }
@@ -176,6 +188,30 @@ func (s *server) StreamConfigs(stream configservice.ConfigDiscoveryService_Strea
 
 func (s *server) StreamApis(stream apiservice.ApiDiscoveryService_StreamApisServer) error {
 	return s.StreamHandler(stream, resource.APIType)
+}
+
+func (s *server) StreamSubscriptions(stream subscriptionservice.SubscriptionDiscoveryService_StreamSubscriptionsServer) error {
+	return s.StreamHandler(stream, resource.SubscriptionListType)
+}
+
+func (s *server) StreamApiList(stream subscriptionservice.ApiListDiscoveryService_StreamApiListServer) error {
+	return s.StreamHandler(stream, resource.ApiListType)
+}
+
+func (s *server) StreamApplications(stream subscriptionservice.ApplicationDiscoveryService_StreamApplicationsServer) error {
+	return s.StreamHandler(stream, resource.ApplicationListType)
+}
+
+func (s *server) StreamApplicationPolicies(stream subscriptionservice.ApplicationPolicyDiscoveryService_StreamApplicationPoliciesServer) error {
+	return s.StreamHandler(stream, resource.ApplicationPolicyListType)
+}
+
+func (s *server) StreamSubscriptionPolicies(stream subscriptionservice.SubscriptionPolicyDiscoveryService_StreamSubscriptionPoliciesServer) error {
+	return s.StreamHandler(stream, resource.SubscriptionPolicyListType)
+}
+
+func (s *server) StreamApplicationKeyMappings(stream subscriptionservice.ApplicationKeyMappingDiscoveryService_StreamApplicationKeyMappingsServer) error {
+	return s.StreamHandler(stream, resource.ApplicationKeyMappingListType)
 }
 
 // Fetch is the universal fetch method.

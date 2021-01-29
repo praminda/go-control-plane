@@ -33,5 +33,11 @@ const (
 	Runtime
 	Config
 	API
+	SubscriptionList
+	ApplicationList
+	ApiList
+	ApplicationPolicyList
+	SubscriptionPolicyList
+	ApplicationKeyMappingList
 	UnknownType // token to count the total number of supported types
 )

@@ -28,8 +28,8 @@ import (
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
+	cache "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 )
 
 type Server interface {
@@ -73,32 +73,50 @@ type Stream interface {
 
 // watches for all xDS resource types
 type watches struct {
-	endpoints chan cache.Response
-	clusters  chan cache.Response
-	routes    chan cache.Response
-	listeners chan cache.Response
-	secrets   chan cache.Response
-	runtimes  chan cache.Response
-	configs   chan cache.Response
-	apis      chan cache.Response
+	endpoints                 chan cache.Response
+	clusters                  chan cache.Response
+	routes                    chan cache.Response
+	listeners                 chan cache.Response
+	secrets                   chan cache.Response
+	runtimes                  chan cache.Response
+	configs                   chan cache.Response
+	apis                      chan cache.Response
+	subscriptionList          chan cache.Response
+	applicationList           chan cache.Response
+	apiList                   chan cache.Response
+	applicationPolicyList     chan cache.Response
+	subscriptionPolicyList    chan cache.Response
+	applicationKeyMappingList chan cache.Response
 
-	endpointCancel func()
-	clusterCancel  func()
-	routeCancel    func()
-	listenerCancel func()
-	secretCancel   func()
-	runtimeCancel  func()
-	configCancel   func()
-	apiCancel      func()
+	endpointCancel                  func()
+	clusterCancel                   func()
+	routeCancel                     func()
+	listenerCancel                  func()
+	secretCancel                    func()
+	runtimeCancel                   func()
+	configCancel                    func()
+	apiCancel                       func()
+	subscriptionListCancel          func()
+	applicationListCancel           func()
+	apiListCancel                   func()
+	applicationPolicyListCancel     func()
+	subscriptionPolicyListCancel    func()
+	applicationKeyMappingListCancel func()
 
-	endpointNonce string
-	clusterNonce  string
-	routeNonce    string
-	listenerNonce string
-	secretNonce   string
-	runtimeNonce  string
-	confiNonce    string
-	apiNonce      string
+	endpointNonce                  string
+	clusterNonce                   string
+	routeNonce                     string
+	listenerNonce                  string
+	secretNonce                    string
+	runtimeNonce                   string
+	confiNonce                     string
+	apiNonce                       string
+	subscriptionListNonce          string
+	applicationListNonce           string
+	apiListNonce                   string
+	applicationPolicyListNonce     string
+	subscriptionPolicyListNonce    string
+	applicationKeyMappingListNonce string
 
 	// Opaque resources share a muxed channel. Nonces and watch cancellations are indexed by type URL.
 	responses     chan cache.Response
@@ -145,6 +163,25 @@ func (values *watches) Cancel() {
 	if values.apiCancel != nil {
 		values.apiCancel()
 	}
+	if values.subscriptionListCancel != nil {
+		values.subscriptionListCancel()
+	}
+	if values.applicationListCancel != nil {
+		values.applicationListCancel()
+	}
+	if values.apiListCancel != nil {
+		values.apiListCancel()
+	}
+	if values.applicationPolicyListCancel != nil {
+		values.applicationPolicyListCancel()
+	}
+	if values.subscriptionPolicyListCancel != nil {
+		values.subscriptionPolicyListCancel()
+	}
+	if values.applicationKeyMappingListCancel != nil {
+		values.applicationKeyMappingListCancel()
+	}
+
 	for _, cancel := range values.cancellations {
 		if cancel != nil {
 			cancel()
@@ -288,6 +325,66 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 			}
 			values.apiNonce = nonce
 
+		case resp, more := <-values.subscriptionList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "subscriptionList watch failed")
+			}
+			nonce, err := send(resp, resource.SubscriptionListType)
+			if err != nil {
+				return err
+			}
+			values.subscriptionListNonce = nonce
+
+		case resp, more := <-values.apiList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "apiList watch failed")
+			}
+			nonce, err := send(resp, resource.ApiListType)
+			if err != nil {
+				return err
+			}
+			values.apiListNonce = nonce
+
+		case resp, more := <-values.applicationList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "applicationList watch failed")
+			}
+			nonce, err := send(resp, resource.ApplicationListType)
+			if err != nil {
+				return err
+			}
+			values.applicationListNonce = nonce
+
+		case resp, more := <-values.applicationPolicyList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "applicationPolicyList watch failed")
+			}
+			nonce, err := send(resp, resource.ApplicationPolicyListType)
+			if err != nil {
+				return err
+			}
+			values.applicationPolicyListNonce = nonce
+
+		case resp, more := <-values.subscriptionPolicyList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "subscriptionPolicyList watch failed")
+			}
+			nonce, err := send(resp, resource.SubscriptionPolicyListType)
+			if err != nil {
+				return err
+			}
+			values.subscriptionPolicyListNonce = nonce
+
+		case resp, more := <-values.applicationKeyMappingList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "applicationKeyMappingList watch failed")
+			}
+			nonce, err := send(resp, resource.ApplicationKeyMappingListType)
+			if err != nil {
+				return err
+			}
+			values.applicationKeyMappingListNonce = nonce
+
 		case resp, more := <-values.responses:
 			if more {
 				if resp == errorResponse {
@@ -392,6 +489,49 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 						values.apiCancel()
 					}
 					values.apis, values.apiCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.SubscriptionListType:
+				if values.subscriptionListNonce == "" || values.subscriptionListNonce == nonce {
+					if values.subscriptionListCancel != nil {
+						values.subscriptionListCancel()
+					}
+					values.subscriptionList, values.subscriptionListCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.ApiListType:
+				if values.apiListNonce == "" || values.apiListNonce == nonce {
+					if values.apiListCancel != nil {
+						values.apiListCancel()
+					}
+					values.apiList, values.apiListCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.ApplicationListType:
+				if values.applicationListNonce == "" || values.applicationListNonce == nonce {
+					if values.applicationListCancel != nil {
+						values.applicationListCancel()
+					}
+					values.applicationList, values.applicationListCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.ApplicationPolicyListType:
+				if values.applicationPolicyListNonce == "" || values.applicationPolicyListNonce == nonce {
+					if values.applicationPolicyListCancel != nil {
+						values.applicationPolicyListCancel()
+					}
+					values.applicationPolicyList, values.applicationPolicyListCancel = s.cache.CreateWatch(req)
+				}
+
+			case req.TypeUrl == resource.SubscriptionPolicyListType:
+				if values.subscriptionPolicyListNonce == "" || values.subscriptionPolicyListNonce == nonce {
+					if values.subscriptionPolicyListCancel != nil {
+						values.subscriptionPolicyListCancel()
+					}
+					values.subscriptionPolicyList, values.subscriptionPolicyListCancel = s.cache.CreateWatch(req)
+				}
+			case req.TypeUrl == resource.ApplicationKeyMappingListType:
+				if values.applicationKeyMappingListNonce == "" || values.applicationKeyMappingListNonce == nonce {
+					if values.applicationKeyMappingListCancel != nil {
+						values.applicationKeyMappingListCancel()
+					}
+					values.applicationKeyMappingList, values.applicationKeyMappingListCancel = s.cache.CreateWatch(req)
 				}
 			default:
 				typeUrl := req.TypeUrl

@@ -64,7 +64,13 @@ func NewSnapshot(version string,
 	runtimes []types.Resource,
 	secrets []types.Resource,
 	configs []types.Resource,
-	apis []types.Resource) Snapshot {
+	apis []types.Resource,
+	subcriptionList []types.Resource,
+	applicationList []types.Resource,
+	apiList []types.Resource,
+	applicationPolicyList []types.Resource,
+	subscriptionPolicyList []types.Resource,
+	applicationKeyMappingList []types.Resource,) Snapshot {
 	out := Snapshot{}
 	out.Resources[types.Endpoint] = NewResources(version, endpoints)
 	out.Resources[types.Cluster] = NewResources(version, clusters)
@@ -74,6 +80,12 @@ func NewSnapshot(version string,
 	out.Resources[types.Secret] = NewResources(version, secrets)
 	out.Resources[types.Config] = NewResources(version, configs)
 	out.Resources[types.API] = NewResources(version, apis)
+	out.Resources[types.SubscriptionList] = NewResources(version, subcriptionList)
+	out.Resources[types.ApplicationList] = NewResources(version, apiList)
+	out.Resources[types.ApiList] = NewResources(version, applicationList)
+	out.Resources[types.ApplicationPolicyList] = NewResources(version, applicationPolicyList)
+	out.Resources[types.SubscriptionPolicyList] = NewResources(version, subscriptionPolicyList)
+	out.Resources[types.ApplicationKeyMappingList] = NewResources(version, applicationKeyMappingList)
 	return out
 }
 

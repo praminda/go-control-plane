@@ -50,6 +50,18 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.Config
 	case resource.APIType:
 		return types.API
+	case resource.SubscriptionListType:
+		return types.SubscriptionList
+	case resource.ApiListType:
+		return types.ApiList
+	case resource.ApplicationListType:
+		return types.ApplicationList
+	case resource.ApplicationPolicyListType:
+		return types.ApplicationPolicyList
+	case resource.SubscriptionPolicyListType:
+		return types.SubscriptionPolicyList
+	case resource.ApplicationKeyMappingListType:
+		return types.ApplicationKeyMappingList
 	}
 	return types.UnknownType
 }
