@@ -10,15 +10,21 @@ import (
 
 // Resource types in xDS v3.
 const (
-	apiTypePrefix = "type.googleapis.com/"
-	EndpointType  = apiTypePrefix + "envoy.config.endpoint.v3.ClusterLoadAssignment"
-	ClusterType   = apiTypePrefix + "envoy.config.cluster.v3.Cluster"
-	RouteType     = apiTypePrefix + "envoy.config.route.v3.RouteConfiguration"
-	ListenerType  = apiTypePrefix + "envoy.config.listener.v3.Listener"
-	SecretType    = apiTypePrefix + "envoy.extensions.transport_sockets.tls.v3.Secret"
-	RuntimeType   = apiTypePrefix + "envoy.service.runtime.v3.Runtime"
-	ConfigType    = apiTypePrefix + "wso2.discovery.config.enforcer.Config"
-	APIType       = apiTypePrefix + "wso2.discovery.api.Api"
+	apiTypePrefix                 = "type.googleapis.com/"
+	EndpointType                  = apiTypePrefix + "envoy.config.endpoint.v3.ClusterLoadAssignment"
+	ClusterType                   = apiTypePrefix + "envoy.config.cluster.v3.Cluster"
+	RouteType                     = apiTypePrefix + "envoy.config.route.v3.RouteConfiguration"
+	ListenerType                  = apiTypePrefix + "envoy.config.listener.v3.Listener"
+	SecretType                    = apiTypePrefix + "envoy.extensions.transport_sockets.tls.v3.Secret"
+	RuntimeType                   = apiTypePrefix + "envoy.service.runtime.v3.Runtime"
+	ConfigType                    = apiTypePrefix + "wso2.discovery.config.enforcer.Config"
+	APIType                       = apiTypePrefix + "wso2.discovery.api.Api"
+	SubscriptionListType          = apiTypePrefix + "wso2.discovery.subscription.SubscriptionList"
+	ApplicationListType           = apiTypePrefix + "wso2.discovery.subscription.ApplicationList"
+	ApiListType                   = apiTypePrefix + "wso2.discovery.subscription.ApiList"
+	ApplicationPolicyListType     = apiTypePrefix + "wso2.discovery.subscription.ApplicationPolicyList"
+	SubscriptionPolicyListType    = apiTypePrefix + "wso2.discovery.subscription.SubscriptionPolicyList"
+	ApplicationKeyMappingListType = apiTypePrefix + "wso2.discovery.subscription.ApplicationKeyMappingList"
 
 	// AnyType is used only by ADS
 	AnyType = ""

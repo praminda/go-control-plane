@@ -396,6 +396,12 @@ func (ts TestSnapshot) Generate() cache.Snapshot {
 		secrets,
 		[]types.Resource{},
 		[]types.Resource{},
+		[]types.Resource{},
+		[]types.Resource{},
+		[]types.Resource{},
+		[]types.Resource{},
+		[]types.Resource{},
+		[]types.Resource{},
 	)
 
 	return out
