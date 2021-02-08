@@ -402,6 +402,7 @@ func (ts TestSnapshot) Generate() cache.Snapshot {
 		[]types.Resource{},
 		[]types.Resource{},
 		[]types.Resource{},
+		[]types.Resource{},
 	)
 
 	return out

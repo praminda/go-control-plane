@@ -53,7 +53,7 @@ var (
 		[]types.Resource{testRoute},
 		[]types.Resource{testListener},
 		[]types.Resource{testRuntime},
-		[]types.Resource{testSecret[0]})
+		[]types.Resource{testSecret[0]}, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	names = map[string][]string{
 		rsrc.EndpointType: {clusterName},

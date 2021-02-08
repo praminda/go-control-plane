@@ -202,5 +202,6 @@ func GenerateSnapshot() cache.Snapshot {
 		[]types.Resource{},              // secrets
 		[]types.Resource{makeConfigs()}, //configs
 		[]types.Resource{},              // apis
+		[]types.Resource{},              // apis
 	)
 }

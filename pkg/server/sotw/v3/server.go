@@ -87,6 +87,7 @@ type watches struct {
 	applicationPolicyList     chan cache.Response
 	subscriptionPolicyList    chan cache.Response
 	applicationKeyMappingList chan cache.Response
+	keyManagers               chan cache.Response
 
 	endpointCancel                  func()
 	clusterCancel                   func()
@@ -102,6 +103,7 @@ type watches struct {
 	applicationPolicyListCancel     func()
 	subscriptionPolicyListCancel    func()
 	applicationKeyMappingListCancel func()
+	keymanagerCancel                func()
 
 	endpointNonce                  string
 	clusterNonce                   string
@@ -117,6 +119,7 @@ type watches struct {
 	applicationPolicyListNonce     string
 	subscriptionPolicyListNonce    string
 	applicationKeyMappingListNonce string
+	keyManagerNonce                string
 
 	// Opaque resources share a muxed channel. Nonces and watch cancellations are indexed by type URL.
 	responses     chan cache.Response
@@ -180,6 +183,9 @@ func (values *watches) Cancel() {
 	}
 	if values.applicationKeyMappingListCancel != nil {
 		values.applicationKeyMappingListCancel()
+	}
+	if values.keymanagerCancel != nil {
+		values.keymanagerCancel()
 	}
 
 	for _, cancel := range values.cancellations {
@@ -385,6 +391,16 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 			}
 			values.applicationKeyMappingListNonce = nonce
 
+		case resp, more := <-values.keyManagers:
+			if !more {
+				return status.Errorf(codes.Unavailable, "keyManagers watch failed")
+			}
+			nonce, err := send(resp, resource.KeyManagerType)
+			if err != nil {
+				return err
+			}
+			values.keyManagerNonce = nonce
+
 		case resp, more := <-values.responses:
 			if more {
 				if resp == errorResponse {
@@ -526,6 +542,14 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 					}
 					values.subscriptionPolicyList, values.subscriptionPolicyListCancel = s.cache.CreateWatch(req)
 				}
+			case req.TypeUrl == resource.ApplicationKeyMappingListType:
+				if values.applicationKeyMappingListNonce == "" || values.applicationKeyMappingListNonce == nonce {
+					if values.applicationKeyMappingListCancel != nil {
+						values.applicationKeyMappingListCancel()
+					}
+					values.applicationKeyMappingList, values.applicationKeyMappingListCancel = s.cache.CreateWatch(req)
+				}
+
 			case req.TypeUrl == resource.ApplicationKeyMappingListType:
 				if values.applicationKeyMappingListNonce == "" || values.applicationKeyMappingListNonce == nonce {
 					if values.applicationKeyMappingListCancel != nil {

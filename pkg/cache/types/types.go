@@ -24,6 +24,7 @@ func (e SkipFetchError) Error() string {
 // ResponseType enumeration of supported response types
 type ResponseType int
 
+// Constant
 const (
 	Endpoint ResponseType = iota
 	Cluster
@@ -39,5 +40,6 @@ const (
 	ApplicationPolicyList
 	SubscriptionPolicyList
 	ApplicationKeyMappingList
+	KeyManagerConfig
 	UnknownType // token to count the total number of supported types
 )
