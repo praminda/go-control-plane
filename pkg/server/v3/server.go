@@ -36,7 +36,7 @@ import (
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	apiservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/api"
 	configservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/config"
-	keymanagerservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/keymanagerConfig"
+	keymanagerservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/keyManagerConfig"
 	subscriptionservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/subscription"
 )
 
