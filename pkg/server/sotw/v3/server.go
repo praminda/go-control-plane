@@ -339,7 +339,7 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 			if !more {
 				return status.Errorf(codes.Unavailable, "apiList watch failed")
 			}
-			nonce, err := send(resp, resource.ApiListType)
+			nonce, err := send(resp, resource.APIListType)
 			if err != nil {
 				return err
 			}
@@ -497,7 +497,7 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 					}
 					values.subscriptionList, values.subscriptionListCancel = s.cache.CreateWatch(req)
 				}
-			case req.TypeUrl == resource.ApiListType:
+			case req.TypeUrl == resource.APIListType:
 				if values.apiListNonce == "" || values.apiListNonce == nonce {
 					if values.apiListCancel != nil {
 						values.apiListCancel()

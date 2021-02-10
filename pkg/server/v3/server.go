@@ -195,7 +195,7 @@ func (s *server) StreamSubscriptions(stream subscriptionservice.SubscriptionDisc
 }
 
 func (s *server) StreamApiList(stream subscriptionservice.ApiListDiscoveryService_StreamApiListServer) error {
-	return s.StreamHandler(stream, resource.ApiListType)
+	return s.StreamHandler(stream, resource.APIListType)
 }
 
 func (s *server) StreamApplications(stream subscriptionservice.ApplicationDiscoveryService_StreamApplicationsServer) error {

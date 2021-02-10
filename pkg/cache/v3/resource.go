@@ -52,7 +52,7 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.API
 	case resource.SubscriptionListType:
 		return types.SubscriptionList
-	case resource.ApiListType:
+	case resource.APIListType:
 		return types.ApiList
 	case resource.ApplicationListType:
 		return types.ApplicationList
