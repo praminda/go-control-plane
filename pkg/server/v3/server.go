@@ -36,6 +36,7 @@ import (
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	apiservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/api"
 	configservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/config"
+	keymanagerservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/keyManagerConfig"
 	subscriptionservice "github.com/envoyproxy/go-control-plane/wso2/discovery/service/subscription"
 )
 
@@ -56,7 +57,7 @@ type Server interface {
 	subscriptionservice.ApplicationPolicyDiscoveryServiceServer
 	subscriptionservice.SubscriptionPolicyDiscoveryServiceServer
 	subscriptionservice.ApplicationKeyMappingDiscoveryServiceServer
-
+	keymanagerservice.KMDiscoveryServiceServer
 	rest.Server
 	sotw.Server
 }
@@ -146,6 +147,7 @@ type server struct {
 	subscriptionservice.UnimplementedApplicationPolicyDiscoveryServiceServer
 	subscriptionservice.UnimplementedSubscriptionPolicyDiscoveryServiceServer
 	subscriptionservice.UnimplementedApplicationKeyMappingDiscoveryServiceServer
+	keymanagerservice.UnimplementedKMDiscoveryServiceServer
 	rest rest.Server
 	sotw sotw.Server
 }
@@ -212,6 +214,10 @@ func (s *server) StreamSubscriptionPolicies(stream subscriptionservice.Subscript
 
 func (s *server) StreamApplicationKeyMappings(stream subscriptionservice.ApplicationKeyMappingDiscoveryService_StreamApplicationKeyMappingsServer) error {
 	return s.StreamHandler(stream, resource.ApplicationKeyMappingListType)
+}
+
+func (s *server) StreamKeyManager(stream keymanagerservice.KMDiscoveryService_StreamKeyManagersServer) error {
+	return s.StreamHandler(stream, resource.KeyManagerType)
 }
 
 // Fetch is the universal fetch method.
